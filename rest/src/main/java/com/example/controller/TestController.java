@@ -4,7 +4,7 @@ import com.example.converter.RequestEventConverter;
 import com.example.event.AbstractEvent;
 import com.example.event.GetUserEvent;
 import com.example.response.ApiResponse;
-import com.example.service.RestStreamService;
+import com.example.service.RequestStream;
 import com.example.utils.NetUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,16 +21,16 @@ import java.util.concurrent.CompletableFuture;
 @RequestMapping("/test")
 public class TestController {
 
-    private final RestStreamService streamService;
+    private final RequestStream streamService;
 
     @Autowired
-    public TestController(RestStreamService streamService) {
+    public TestController(RequestStream streamService) {
         this.streamService = streamService;
     }
 
     @GetMapping("/user/{username}")
     public Mono<ApiResponse> getUser(@PathVariable("username") String username) {
-        GetUserEvent getUserEvent = new GetUserEvent(UUID.randomUUID().toString(), NetUtil.LOCAL_HOST, username);
+        GetUserEvent getUserEvent = new GetUserEvent(UUID.randomUUID().toString(), NetUtil.getHostId(), username);
 
         final Sinks.EmitResult emitResult = streamService.publishEvent(getUserEvent);
         if (emitResult.isFailure()) {

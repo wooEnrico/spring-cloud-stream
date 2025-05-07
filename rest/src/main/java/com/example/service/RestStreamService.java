@@ -5,6 +5,7 @@ import com.example.event.AbstractEvent;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.MessageBuilder;
@@ -16,7 +17,8 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 @Service
-public class RestStreamService {
+@ConditionalOnProperty(name = "kafka.configuration.enabled", matchIfMissing = true, havingValue = "false")
+public class RestStreamService implements RequestStream {
     private final static Logger log = org.slf4j.LoggerFactory.getLogger(RestStreamService.class);
 
     private final ObjectMapper objectMapper;
@@ -55,6 +57,7 @@ public class RestStreamService {
         });
     }
 
+    @Override
     public Sinks.EmitResult publishEvent(AbstractEvent event) {
         return eventSink.tryEmitNext(event);
     }

@@ -12,6 +12,7 @@ import org.springframework.messaging.Message;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Service;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import java.util.function.Consumer;
 
@@ -32,12 +33,20 @@ public class WorkerStreamService {
     public Consumer<Message<String>> messageConsumer() {
         return message -> {
             try {
-                Object type = Optional.ofNullable(message).map(Message::getHeaders)
-                        .map(headers -> headers.get("@type"))
+                String type = Optional.ofNullable(message).map(Message::getHeaders)
+                        .map(headers -> {
+                            final Object o = headers.get("@type");
+                            if (o instanceof String s) {
+                                return s;
+                            } else if (o instanceof byte[] b) {
+                                return new String(b, StandardCharsets.UTF_8);
+                            }
+                            return null;
+                        })
                         .orElse(null);
 
-                if (type instanceof String typeStr) {
-                    Class<?> eventClass = Class.forName(typeStr);
+                if (type != null) {
+                    Class<?> eventClass = Class.forName(type);
                     if (AbstractEvent.class.isAssignableFrom(eventClass)) {
                         @SuppressWarnings("unchecked")
                         Class<? extends AbstractEvent> concreteEventClass = (Class<? extends AbstractEvent>) eventClass;
