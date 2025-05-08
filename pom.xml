@@ -84,6 +84,19 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <image>
+                        <name>${project.groupId}/${project.name}:${project.version}</name>
+                        <env>
+                            <BP_JVM_VERSION>17</BP_JVM_VERSION> <!-- 指定 JVM 版本 -->
+                        </env>
+                        <publish>false</publish> <!-- 是否推到远程仓库 -->
+                    </image>
+                </configuration>
+            </plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
