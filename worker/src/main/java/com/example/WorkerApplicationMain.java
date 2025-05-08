@@ -8,7 +8,7 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 public class WorkerApplicationMain {
     public static void main(String[] args) {
         new SpringApplicationBuilder(WorkerApplicationMain.class)
-                .web(WebApplicationType.NONE)
+                .web(WebApplicationType.REACTIVE)
                 .run(args);
     }
 }
