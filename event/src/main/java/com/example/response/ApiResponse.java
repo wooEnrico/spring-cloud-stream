@@ -6,20 +6,9 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 @JsonSerialize
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class ApiResponse {
-    private final long timestamp;
-    private final int status;
-    private final String error;
-    private final String message;
-    private final Object data;
-
+public record ApiResponse(long timestamp, int status, String error, String message, Object data) {
     @JsonCreator
-    public ApiResponse(long timestamp, int status, String error, String message, Object data) {
-        this.timestamp = timestamp;
-        this.status = status;
-        this.error = error;
-        this.message = message;
-        this.data = data;
+    public ApiResponse {
     }
 
     public long getTimestamp() {
