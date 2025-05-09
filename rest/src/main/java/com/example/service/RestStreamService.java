@@ -1,7 +1,7 @@
 package com.example.service;
 
-import com.example.converter.RequestEventConverter;
 import com.example.event.AbstractEvent;
+import com.example.response.ApiResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -23,10 +24,12 @@ public class RestStreamService implements RequestStream {
 
     private final ObjectMapper objectMapper;
     private final Sinks.Many<AbstractEvent> eventSink;
+    private final LocalRequestEventConverter requestEventConverter;
 
     @Autowired
-    public RestStreamService(ObjectMapper objectMapper) {
+    public RestStreamService(ObjectMapper objectMapper, LocalRequestEventConverter requestEventConverter) {
         this.objectMapper = objectMapper;
+        this.requestEventConverter = requestEventConverter;
         this.eventSink = Sinks.many().unicast().onBackpressureBuffer();
     }
 
@@ -63,7 +66,17 @@ public class RestStreamService implements RequestStream {
     }
 
     private void processEvent(AbstractEvent event) {
-        log.info("Processing event: {}", event);
-        RequestEventConverter.processResponse(event);
+        CompletableFuture<ApiResponse> response = requestEventConverter.response(event);
+        if (response == null) {
+            log.error("No response found for event: {}", event);
+            return;
+        }
+        response.whenComplete((apiResponse, throwable) -> {
+            if (throwable != null) {
+                log.error("Error processing event: {}", event, throwable);
+            } else {
+                log.info("Successfully processed event: {} with response: {}", event.getId(), apiResponse);
+            }
+        });
     }
 }

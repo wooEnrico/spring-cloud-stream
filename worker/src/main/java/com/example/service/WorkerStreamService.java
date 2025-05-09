@@ -77,12 +77,14 @@ public class WorkerStreamService {
 
     private void processEvent(AbstractEvent event) {
         log.info("Processing event: {}", event);
-        final ApiResponse apiResponse = event.getApiResponse();
-        apiResponse.setError(null);
-        apiResponse.setData("OK");
-        apiResponse.setStatus(200);
+
+        ApiResponse.Builder builder = ApiResponse.builder()
+                .timestamp(event.getTimestamp())
+                .data("OK")
+                .status(200);
         if (event instanceof GetUserEvent getUserEvent) {
-            apiResponse.setMessage("Success get " + getUserEvent.getUsername());
+            builder.message("Success get " + getUserEvent.getUsername());
         }
+        event.setApiResponse(builder.build());
     }
 }
