@@ -46,7 +46,7 @@ public class RestStreamService2 implements RequestStream {
 
     @Bean
     public Function<List<String>, List<String>> messageResponseTopic() {
-        return list -> list.stream().map(s -> s + "-" + NetUtil.getHostId()).collect(Collectors.toList());
+        return list -> list.stream().map(s -> s.formatted(NetUtil.getHostId())).collect(Collectors.toList());
     }
 
     @Bean

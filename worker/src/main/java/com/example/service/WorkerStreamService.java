@@ -6,6 +6,7 @@ import com.example.response.ApiResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.context.annotation.Bean;
 import org.springframework.messaging.Message;
@@ -22,11 +23,14 @@ public class WorkerStreamService {
 
     private final ObjectMapper objectMapper;
     private final StreamBridge streamBridge;
+    private final String responseTopicPattern;
 
     @Autowired
-    public WorkerStreamService(ObjectMapper objectMapper, StreamBridge streamBridge) {
+    public WorkerStreamService(ObjectMapper objectMapper, StreamBridge streamBridge,
+            @Value("${message.response.topic.pattern}") String responseTopicPattern) {
         this.objectMapper = objectMapper;
         this.streamBridge = streamBridge;
+        this.responseTopicPattern = responseTopicPattern;
     }
 
     @Bean
@@ -56,7 +60,7 @@ public class WorkerStreamService {
                             this.processEvent(event);
                             String eventJson = objectMapper.writeValueAsString(event);
                             Message<String> newMessage = MessageBuilder.withPayload(eventJson).build();
-                            streamBridge.send("messages-response-" + event.getHost(), newMessage);
+                            streamBridge.send(responseTopicPattern.formatted(event.getHost()), newMessage);
                         } catch (Exception e) {
                             log.error("Error serializing event: {}", event, e);
                         }
